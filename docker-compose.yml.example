@@ -1,0 +1,29 @@
+version: '3'
+services:
+  app:
+    image: webdevops/php-nginx-dev:7.2
+    networks:
+      - proxy
+    volumes:
+      - ./:/app
+    environment:
+      - PHP_DEBUGGER=xdebug
+      - PHP_DISPLAY_ERRORS=1
+      - PHP_DATE_TIMEZONE=Asia/Ho_Chi_Minh
+      - WEB_DOCUMENT_ROOT=/app/public
+    labels:
+      - traefik.enable=true
+      - traefik.backend=Blinkist
+      - traefik.frontend.rule=Host:dev.blinkist.net
+      - traefik.docker.network=proxy
+      - traefik.port=80
+  nodejs:
+    image: node:8
+    stdin_open: true
+    networks:
+      - proxy
+    volumes:
+      - ./:/app
+networks:
+  proxy:
+    external: true
