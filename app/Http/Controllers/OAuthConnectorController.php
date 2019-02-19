@@ -65,6 +65,10 @@ class OAuthConnectorController extends Controller
             ]
         ]);
 
+        if (json_decode((string) $response->getBody(), true) == null) {
+            return redirect()->route('redirect.to.goodreads');
+        }
+
         $books = json_decode((string) $response->getBody(), true);
 
         return view('oauth.wanttoread', ['books' => $books]);
