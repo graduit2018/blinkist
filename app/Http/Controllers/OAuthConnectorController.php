@@ -14,7 +14,7 @@ class OAuthConnectorController extends Controller
             'client_id' => env('GOODREADS_CLIENT_ID', ''),
             'redirect_uri' => 'http://dev.blinkist.net/callback',
             'response_type' => 'code',
-            'scope' => '',
+            'scope' => 'get-isbn13 get-title',
         ]);
 
         return redirect('http://dev.goodreads.net/oauth/authorize?'.$query);
