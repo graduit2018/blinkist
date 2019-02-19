@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use GuzzleHttp\Client;
+use Illuminate\Support\Facades\Auth;
 
 class OAuthConnectorController extends Controller
 {
@@ -20,6 +21,10 @@ class OAuthConnectorController extends Controller
     }
 
     public function callbackFromGoodreads(Request $request) {
+        if (isset($request->error)) {
+            return redirect('/home');
+        }
+
         $http = new Client();
 
         $response = $http->post('http://dev.goodreads.net/oauth/token', [
@@ -32,9 +37,36 @@ class OAuthConnectorController extends Controller
             ],
         ]);
 
-        dd(json_decode((string) $response->getBody(), true));
-        // session()->put('token', json_decode((string) $response->getBody(), true));
+        $token = json_decode((string) $response->getBody(), true);
+
+        $user = Auth::user();
+        $user->goodreads_access_token = $token['access_token'];
+        $user->goodreads_refresh_token = $token['refresh_token'];
+        $user->save();
 
         return redirect('/home');
+    }
+
+    public function removeTokenGoodreads() {
+        $user = Auth::user();
+        $user->goodreads_access_token = null;
+        $user->goodreads_refresh_token = null;
+        $user->save();
+
+        return redirect('/home');
+    }
+
+    public function wantToRead() {
+        $http = new Client();
+
+        $response = $http->get('http://dev.goodreads.net/api/users/subscriptions', [
+            'headers' => [
+                'Authorization' => 'Bearer '.Auth::user()->goodreads_access_token
+            ]
+        ]);
+
+        $books = json_decode((string) $response->getBody(), true);
+
+        return view('oauth.wanttoread', ['books' => $books]);
     }
 }

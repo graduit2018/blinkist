@@ -50,7 +50,14 @@
                             @endif
                         @else
                             <li class="nav-item">
-                                <a class="nav-link {{ Route::is('redirect.to.goodreads') ? 'active' : '' }}" href="{{ route('redirect.to.goodreads') }}">Connect your Goodreads</a>
+                                    <a class="nav-link {{ Route::is('wanttoread') ? 'active' : '' }}" href="{{ route('wanttoread') }}">Want to Read</a>
+                                </li>
+                            <li class="nav-item">
+                                @if (Auth::user()->goodreads_access_token)
+                                    <a class="nav-link" href="{{ route('remove.token.goodreads') }}">Disconnect Goodreads</a>
+                                @else
+                                    <a class="nav-link" href="{{ route('redirect.to.goodreads') }}">Connect your Goodreads</a>
+                                @endif
                             </li>
                             <li class="nav-item dropdown">
                                 <a id="navbarDropdown" class="nav-link dropdown-toggle" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-pre>
