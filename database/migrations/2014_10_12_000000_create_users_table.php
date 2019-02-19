@@ -21,6 +21,7 @@ class CreateUsersTable extends Migration
             $table->string('password');
             $table->longText('goodreads_access_token')->nullable();
             $table->longText('goodreads_refresh_token')->nullable();
+            $table->longText('expires_at')->nullable();
             $table->rememberToken();
             $table->timestamps();
         });

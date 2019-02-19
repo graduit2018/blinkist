@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Auth;
@@ -42,6 +43,7 @@ class OAuthConnectorController extends Controller
         $user = Auth::user();
         $user->goodreads_access_token = $token['access_token'];
         $user->goodreads_refresh_token = $token['refresh_token'];
+        $user->expires_at = Carbon::now()->subMinute()->addSeconds($token['expires_in'])->timestamp;
         $user->save();
 
         return redirect('/home');
@@ -58,6 +60,27 @@ class OAuthConnectorController extends Controller
 
     public function wantToRead() {
         $http = new Client();
+
+        if (Auth::user()->tokenExpired()) {
+
+            $response = $http->post('http://dev.goodreads.net/oauth/token', [
+                'form_params' => [
+                    'grant_type' => 'refresh_token',
+                    'refresh_token' => Auth::user()->goodreads_refresh_token,
+                    'client_id' => env('GOODREADS_CLIENT_ID', ''),
+                    'client_secret' => env('GOODREADS_CLIENT_SECRET', ''),
+                    'scope' => '',
+                ],
+            ]);
+
+            $token = json_decode((string) $response->getBody(), true);
+
+            $user = Auth::user();
+            $user->goodreads_access_token = $token['access_token'];
+            $user->goodreads_refresh_token = $token['refresh_token'];
+            $user->expires_at = Carbon::now()->subMinute()->addSeconds($token['expires_in'])->timestamp;
+            $user->save();
+        }
 
         $response = $http->get('http://dev.goodreads.net/api/users/subscriptions', [
             'headers' => [
