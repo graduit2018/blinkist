@@ -4,6 +4,8 @@ services:
     image: webdevops/php-nginx-dev:7.2
     networks:
       - proxy
+    extra_hosts:
+      - dev.goodreads.net:192.168.48.6 #docker inspect traefik to get the IP address of traefik container
     volumes:
       - ./:/app
     environment:
