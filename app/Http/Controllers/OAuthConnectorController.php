@@ -13,12 +13,12 @@ class OAuthConnectorController extends Controller
     {
         $query = http_build_query([
             'client_id' => env('GOODREADS_CLIENT_ID', ''),
-            'redirect_uri' => 'http://dev.blinkist.net/callback',
+            'redirect_uri' => 'http://blinkist.net/callback',
             'response_type' => 'code',
             'scope' => 'get-isbn13 get-title',
         ]);
 
-        return redirect('http://dev.goodreads.net/oauth/authorize?'.$query);
+        return redirect('http://oauth.goodreads.net/oauth/authorize?'.$query);
     }
 
     public function callbackFromGoodreads(Request $request) {
@@ -28,12 +28,12 @@ class OAuthConnectorController extends Controller
 
         $http = new Client();
 
-        $response = $http->post('http://dev.goodreads.net/oauth/token', [
+        $response = $http->post('http://oauth.goodreads.net/oauth/token', [
             'form_params' => [
                 'grant_type' => 'authorization_code',
                 'client_id' => env('GOODREADS_CLIENT_ID', ''),
                 'client_secret' => env('GOODREADS_CLIENT_SECRET', ''),
-                'redirect_uri' => 'http://dev.blinkist.net/callback',
+                'redirect_uri' => 'http://blinkist.net/callback',
                 'code' => $request->code,
             ],
         ]);
@@ -61,9 +61,13 @@ class OAuthConnectorController extends Controller
     public function wantToRead() {
         $http = new Client();
 
+        if (Auth::user()->goodreads_access_token == null) {
+            return view('oauth.wanttoread');
+        }
+
         if (Auth::user()->tokenExpired()) {
 
-            $response = $http->post('http://dev.goodreads.net/oauth/token', [
+            $response = $http->post('http://oauth.goodreads.net/oauth/token', [
                 'form_params' => [
                     'grant_type' => 'refresh_token',
                     'refresh_token' => Auth::user()->goodreads_refresh_token,
@@ -82,7 +86,7 @@ class OAuthConnectorController extends Controller
             $user->save();
         }
 
-        $response = $http->get('http://dev.goodreads.net/api/users/subscriptions', [
+        $response = $http->get('http://goodreads.net/api/users/subscriptions', [
             'headers' => [
                 'Authorization' => 'Bearer '.Auth::user()->goodreads_access_token
             ]
