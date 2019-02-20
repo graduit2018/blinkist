@@ -1,11 +1,12 @@
 version: '3'
 services:
-  app:
+  client:
     image: webdevops/php-nginx-dev:7.2
     networks:
       - proxy
     extra_hosts:
-      - dev.goodreads.net:192.168.48.6 #docker inspect traefik to get the IP address of traefik container
+      - goodreads.net:192.168.48.6 #docker inspect traefik to get the IP address of traefik container
+      - oauth.goodreads.net:192.168.48.6 #docker inspect traefik to get the IP address of traefik container
     volumes:
       - ./:/app
     environment:
@@ -16,16 +17,16 @@ services:
     labels:
       - traefik.enable=true
       - traefik.backend=Blinkist
-      - traefik.frontend.rule=Host:dev.blinkist.net
+      - traefik.frontend.rule=Host:blinkist.net
       - traefik.docker.network=proxy
       - traefik.port=80
-  nodejs:
-    image: node:8
-    stdin_open: true
-    networks:
-      - proxy
-    volumes:
-      - ./:/app
+  # nodejs:
+  #   image: node:8
+  #   stdin_open: true
+  #   networks:
+  #     - proxy
+  #   volumes:
+  #     - ./:/app
 networks:
   proxy:
     external: true
